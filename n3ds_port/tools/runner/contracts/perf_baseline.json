@@ -1,0 +1,14 @@
+{
+  "name": "r48 Forest of Hope, busy",
+  "scene": "Forest of Hope, ~60 Pikmin, enemies on screen",
+  "build": "TEST build r48 (gpu_xform 0, lighting 1, fps_cap 30)",
+  "log": "n3ds_port/docs/validation/perf-2026-10-27-r48-forest-busy.log",
+  "skip_frames": 600,
+  "metrics": {
+    "frame_ms": 50.9,
+    "game_ms": 13.6,
+    "wait_ms": 26.4,
+    "worker_ms": 34.0
+  },
+  "note": "Medians of the 600-frame [perf] windows after frame 600 of the capture. The scene changes inside the capture (area entry, autolod spikes), so this is a coarse reference: decisions are made with an interleaved A/B capture (ab_report.py)."
+}

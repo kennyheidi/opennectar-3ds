@@ -1,0 +1,293 @@
+{
+  "_doc": "Open Nectar 3DS project description for the T2K-derived gates (gates_vfp.py, audit_*.py, ab_report.py). Paths are relative to repo_root, which is relative to tools/runner. See n3ds_port/AGENTS.md.",
+  "repo_root": "../../..",
+  "frozen_at": "",
+  "src_roots": [
+    "n3ds_port/platform"
+  ],
+  "excluded": [
+    "n3ds_port/tools/host_test",
+    "n3ds_port/platform/n3ds_stubs_gen.cpp"
+  ],
+  "build_flag_files": [
+    "cmake/toolchain-3ds.cmake",
+    "n3ds_port/CMakeLists.txt"
+  ],
+  "build_flags_required": [
+    "-march=armv6k",
+    "-mfloat-abi=hard",
+    "-mtp=soft"
+  ],
+  "build_dir": "build-3ds",
+  "perf_log_dir": "n3ds_port/docs/validation",
+  "inc_hot_baseline": "n3ds_port/tools/runner/contracts/inc_hot_baseline.txt",
+  "fpscr_helpers": [
+    "n3ds_vfp_runfast"
+  ],
+  "r1_main_site": "n3ds_port/platform/n3ds_main.cpp",
+  "r1_thread_sites": [
+    "n3ds_port/platform/n3ds_main.cpp",
+    "n3ds_port/platform/n3ds_worker.cpp",
+    "n3ds_port/platform/n3ds_sdl_audio.cpp",
+    "n3ds_port/platform/n3ds_stx.cpp",
+    "n3ds_port/platform/n3ds_dbgmenu.cpp"
+  ],
+  "standing_exemptions": [
+    {
+      "id": "E-PROBE-1",
+      "file": "n3ds_port/platform/n3ds_gfx.cpp",
+      "symbols": [
+        "n3ds_gfx_frame_end",
+        "censusClose",
+        "censusOpen",
+        "logMaterialProbe"
+      ],
+      "rules": [
+        "R2",
+        "R3",
+        "R4",
+        "R6",
+        "R7",
+        "R11"
+      ]
+    },
+    {
+      "id": "E-LOG-1",
+      "file": "n3ds_port/platform/n3ds_window.cpp",
+      "symbols": [
+        "*"
+      ],
+      "rules": [
+        "R2",
+        "R3",
+        "R4",
+        "R7",
+        "R11"
+      ]
+    },
+    {
+      "id": "E-TEXCONV-1",
+      "file": "n3ds_port/platform/n3ds_texconv.cpp",
+      "symbols": [
+        "*"
+      ],
+      "rules": [
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R11"
+      ]
+    },
+    {
+      "id": "E-STX-1",
+      "file": "n3ds_port/platform/n3ds_stx.cpp",
+      "symbols": [
+        "*"
+      ],
+      "rules": [
+        "R2",
+        "R3",
+        "R4",
+        "R6",
+        "R7",
+        "R11"
+      ]
+    }
+  ],
+  "profile_stages": [
+    {
+      "name": "worker_display_lists",
+      "pattern": "\\[lite2\\] worker, ms per frame over the last 60 frames: display lists (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_gfx.cpp"
+      ],
+      "symbols": [
+        "makeGeom",
+        "finishGeom",
+        "makeAttr",
+        "gxLightVertex",
+        "triReject",
+        "emitTri",
+        "resolveLazy",
+        "xfOne",
+        "xfFour",
+        "xfFourG",
+        "xfGather",
+        "xfRange",
+        "cpuDrawBody",
+        "ctGet",
+        "doDisplayList",
+        "meshTryDraw",
+        "meshClassify",
+        "meshUniforms",
+        "clamp255",
+        "clipAndEmit",
+        "putTri",
+        "computeCullBounds"
+      ]
+    },
+    {
+      "name": "worker_triangle_loop",
+      "pattern": "\\[lite3\\][^\\n]*triangle loop (\\d+(?:\\.\\d+)?) ms",
+      "files": [
+        "n3ds_port/platform/n3ds_gfx.cpp"
+      ],
+      "symbols": [
+        "makeGeom",
+        "finishGeom",
+        "makeAttr",
+        "gxLightVertex",
+        "triReject",
+        "emitTri",
+        "resolveLazy",
+        "xfOne",
+        "xfFour",
+        "xfFourG",
+        "xfGather",
+        "xfRange",
+        "cpuDrawBody",
+        "ctGet",
+        "doDisplayList",
+        "meshTryDraw",
+        "meshClassify",
+        "meshUniforms",
+        "clamp255",
+        "clipAndEmit",
+        "putTri",
+        "computeCullBounds"
+      ]
+    },
+    {
+      "name": "worker_immediate_mode",
+      "pattern": "\\[lite2\\][^\\n]*immediate mode (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_gfx.cpp"
+      ],
+      "symbols": [
+        "makeGeom",
+        "finishGeom",
+        "makeAttr",
+        "gxLightVertex",
+        "triReject",
+        "emitTri",
+        "resolveLazy",
+        "xfOne",
+        "xfFour",
+        "xfFourG",
+        "xfGather",
+        "xfRange",
+        "cpuDrawBody",
+        "ctGet",
+        "doDisplayList",
+        "meshTryDraw",
+        "meshClassify",
+        "meshUniforms",
+        "clamp255",
+        "clipAndEmit",
+        "putTri",
+        "computeCullBounds"
+      ]
+    },
+    {
+      "name": "worker_state_calls",
+      "pattern": "\\[lite2\\][^\\n]*state calls (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_gfx.cpp",
+        "n3ds_port/platform/n3ds_tev.cpp"
+      ],
+      "symbols": [
+        "resolveMaterial",
+        "resolveMaterialBody",
+        "currentState",
+        "n3dsTevBuild"
+      ]
+    },
+    {
+      "name": "worker_material_resolve",
+      "pattern": "material \\+ texture resolve (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_tev.cpp",
+        "n3ds_port/platform/n3ds_tex.cpp"
+      ],
+      "symbols": [
+        "n3dsTevBuild",
+        "n3dstexResolve",
+        "resolveMaterialBody"
+      ]
+    },
+    {
+      "name": "worker_present",
+      "pattern": "\\[lite2\\][^\\n]*frame end \\+ present (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_gpu.cpp"
+      ],
+      "symbols": [
+        "applyState",
+        "meshIssue",
+        "n3ds_gpu_commit",
+        "setU",
+        "n3ds_gpu_present"
+      ]
+    },
+    {
+      "name": "worker_gpu_submit",
+      "pattern": "GPU submit (\\d+(?:\\.\\d+)?)",
+      "files": [
+        "n3ds_port/platform/n3ds_gpu.cpp"
+      ],
+      "symbols": [
+        "applyState",
+        "meshIssue",
+        "n3ds_gpu_commit",
+        "setU",
+        "n3ds_gpu_present"
+      ]
+    },
+    {
+      "name": "game_audio_tick",
+      "pattern": "\\[prof\\]\\s+run\\s+pc_audio_tick\\(\\)\\s+(\\d+(?:\\.\\d+)?) ms",
+      "files": [
+        "pc_port/audio/pc_audio.cpp",
+        "pc_port/audio/pc_jam.cpp"
+      ]
+    },
+    {
+      "name": "mixer_chunk",
+      "pattern": "mixer callback (\\d+(?:\\.\\d+)?) ms avg",
+      "files": [
+        "n3ds_port/platform/n3ds_fastmix.inc",
+        "n3ds_port/platform/n3ds_aa_resample.inc"
+      ]
+    },
+    {
+      "name": "game_renderall",
+      "pattern": "\\[prof\\]\\s+idle\\s+renderall\\(\\)\\s+(\\d+(?:\\.\\d+)?) ms",
+      "files": [
+        "src/plugPikiKando/gameCoreSection.cpp"
+      ]
+    },
+    {
+      "name": "game_update_ai",
+      "pattern": "\\[prof\\]\\s+core\\s+updateAI\\(\\)\\s+(\\d+(?:\\.\\d+)?) ms",
+      "files": [
+        "src/plugPikiKando/gameCoreSection.cpp"
+      ]
+    }
+  ],
+  "ab": {
+    "_doc": "ab_report.py: the [ab] lines the console writes with nectar.ini ab_test = 1; metrics compared and the noise floor that counts as no change.",
+    "metrics": [
+      "frame_ms",
+      "worker_ms",
+      "game_ms",
+      "dl_ms"
+    ],
+    "primary": "frame_ms",
+    "noise_pct": 3.0,
+    "min_windows": 4
+  }
+}

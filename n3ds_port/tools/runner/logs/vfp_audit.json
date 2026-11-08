@@ -1,0 +1,187 @@
+{
+  "status": "PASS",
+  "blockers": 0,
+  "reviews": 16,
+  "hotpath_source": "profile",
+  "notes": [
+    "R9 omitted (VFP_OBJDUMP!=1)"
+  ],
+  "findings": [
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_tex.cpp",
+      "line": 286,
+      "symbol": "n3dstexResolve",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_material_resolve",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_tex.cpp",
+      "line": 292,
+      "symbol": "n3dstexResolve",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_material_resolve",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_gfx.cpp",
+      "line": 825,
+      "symbol": "resolveMaterialBody",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_state_calls",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 24,
+      "symbol": "n3dsMixRun",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 120,
+      "symbol": "n3dsMixVoice",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 147,
+      "symbol": "n3dsMixVoice",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 150,
+      "symbol": "n3dsMixVoice",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 167,
+      "symbol": "n3dsMixVoice",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R2",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 264,
+      "symbol": "audio_callback",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "untyped-heuristic: float-to-int cast in loop body"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 201,
+      "symbol": "audio_callback",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 202,
+      "symbol": "audio_callback",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 259,
+      "symbol": "audio_callback",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division in hot loop"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "line": 193,
+      "symbol": "audio_callback",
+      "hotpath": true,
+      "hotpath_reason": "profile:mixer_chunk",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R7",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_gpu.cpp",
+      "line": 304,
+      "symbol": "applyState",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_gpu_submit",
+      "exemption": null,
+      "detail": "float division inner_loop=false"
+    },
+    {
+      "rule": "R2",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_gpu.cpp",
+      "line": 554,
+      "symbol": "meshIssue",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_gpu_submit",
+      "exemption": null,
+      "detail": "untyped-heuristic: float-to-int cast in loop body"
+    },
+    {
+      "rule": "R2",
+      "severity": "SHOULD",
+      "file": "n3ds_port/platform/n3ds_gpu.cpp",
+      "line": 555,
+      "symbol": "meshIssue",
+      "hotpath": true,
+      "hotpath_reason": "profile:worker_gpu_submit",
+      "exemption": null,
+      "detail": "untyped-heuristic: float-to-int cast in loop body"
+    }
+  ]
+}

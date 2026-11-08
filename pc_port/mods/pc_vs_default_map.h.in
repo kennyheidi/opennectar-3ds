@@ -1,0 +1,4 @@
+// Generado por CMake desde maps/vs/impact_arena/map.json: no editar.
+#pragma once
+
+static const char kPcVsDefaultMap[] = R"nmap(@PC_VS_DEFAULT_MAP@)nmap";

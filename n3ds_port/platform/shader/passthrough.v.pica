@@ -1,0 +1,250 @@
+; Unified vertex shader.
+;
+;  xform = false  RING vertices (the CPU path): v0 = PICA clip-space position (game matrices * projection * LCD tilt already
+;                 applied), v1 = colour bytes, v2/v3/v4 = texcoord sets 0..2. Forwarded unchanged (colour scaled by 1/255:
+;                 the PICA attribute loader converts a ubyte to a float WITHOUT normalising).
+;  xform = true   MESH vertices (cached model-space display lists, drawn indexed): v0 = (x, y, z, matrix slot) float4,
+;                 v1 = vertex colour bytes, v2/v3 = raw GX texcoord sets 0/1 (float2), v4 = (nx, ny, nz, 0) float4.
+;                 r53: the whole GameCube transform & lighting runs here (n3ds_port/AGENTS.md section 5):
+;                   view position  = P[3 slot .. 3 slot + 2] . (x, y, z, 1)          (the game's position matrix, per slot)
+;                   clip position  = F . (view, 1)                                    (projection, LCD tilt folded into rows 0 and 1)
+;                   view normal    = N[3 slot .. 3 slot + 2] . (nx, ny, nz)
+;                   colour         = material (vertex colour x cw + mc) x [lighting]
+;                   lighting (lit) = clamp(AMB + sum over lights 0/1 of LC x attenuation x diffuse), GX / Dolphin semantics:
+;                     L = normalise(LP - view), diffuse = max(N.L, LF.x) * LF.y + LF.z  (clamp: 0 1 0, sign: -2 1 0, none: 0 0 1),
+;                     spot (a0/a1):  max(0, LA . (1, c, c^2)) / (LK . (1, d, d^2)), c = max(0, L . LD), d = |LP - view|
+;                     spec (s0/s1):  max(0, LA . (1, h, h^2)) / (LK . (1, h, h^2)), h = N.L >= 0 ? max(0, N . LD) : 0
+;                     a denominator <= 1e-9 gives 0 (as the CPU path); rgb and alpha channels are lit together: LC carries the
+;                     light's colour only in the channels whose mask has it, AMB is 1 for a channel without lighting.
+;                   head (nectar.ini lighting = 0): the old fake headlight, 0.4 + 0.6 |N . (0.30, 0.50, 0.81)|.
+;                 The CPU path (n3ds_gfx.cpp gxLightVertex) is the reference; tools/host_test/run_mesh.sh checks this shader
+;                 against it in a PICA interpreter.
+;
+; HARDWARE RULES (each one cost a GPU hang on a New 3DS, here or in sms-3ds):
+;  - every output register is written ONCE and WHOLE: values are built in temporaries and moved out with one mov
+;    (a half-written output, or .x and .y of an output written by separate instructions, locked the GPU up);
+;  - no mad;
+;  - the vertex buffer's attribute loaders cover the whole stride (n3ds_gpu.cpp adds a padding entry for the 8 unused bytes).
+; src1 of an instruction may be a constant register, src2 may not: constants go first.
+
+.fvec F[4], P[30], N[30], tcu[8], cw, mc, AMB, LP[2], LC[2], LF[2], LA[2], LK[2], LD[2]
+.constf k0(0.0, 1.0, 0.00392156862745098, 0.000001)
+.constf k1(3.0, 0.0000000001, 0.000000001, 0.0)
+.constf k2(0.30, 0.50, 0.81, 0.0)
+.constf k3(0.4, 0.6, 0.0, 1.0)
+.alias zeros  k0.xxxx
+.alias ones   k0.yyyy
+.alias inv255 k0.zzzz
+.alias epsv   k0.wwww
+.alias zo     k0.xxxy
+.alias tiny   k1.yyyy
+.alias deneps k1.zzzz
+.alias ldir   k2
+.alias lowv   k3.xxxx
+.alias highv  k3.yyyy
+.bool xform, lit, head, multi, l0, l1, a0, a1, s0, s1
+
+.out outpos position
+.out outclr color
+.out outtc0 texcoord0
+.out outtc1 texcoord1
+.out outtc2 texcoord2
+
+; registers (mesh branch):
+;  r0 model position (x, y, z, 1)   r1 view position (x, y, z, 1)   r2 clip position, then the light vector
+;  r3 light accumulator             r4 view normal (normalised when lit)
+;  r5 N.L / diffuse term             r6 1/d                          r7 colour
+;  r8 (1, d, d^2, 1/den)             r9 (1, c, c^2, mask)            r10 attenuation scratch
+;  r11 / r12 texture coordinates     r13 texgen scratch
+
+.proc main
+	ifu xform
+		; ---- position: per-slot model-view (single matrix: fixed registers, no address register) ----
+		mov r0, v0
+		mov r0.w, ones
+		ifu multi
+			mul r13.x, k1.xxxx, v0.wwww
+			mova a0.x, r13
+			dp4 r1.x, P[a0.x], r0
+			dp4 r1.y, P[a0.x+1], r0
+			dp4 r1.z, P[a0.x+2], r0
+			dp3 r4.x, N[a0.x], v4
+			dp3 r4.y, N[a0.x+1], v4
+			dp3 r4.z, N[a0.x+2], v4
+		.else
+			dp4 r1.x, P[0], r0
+			dp4 r1.y, P[1], r0
+			dp4 r1.z, P[2], r0
+			dp3 r4.x, N[0], v4
+			dp3 r4.y, N[1], v4
+			dp3 r4.z, N[2], v4
+		.end
+		mov r1.w, ones
+		mov r4.w, zeros
+		dp4 r2.x, F[0], r1
+		dp4 r2.y, F[1], r1
+		dp4 r2.z, F[2], r1
+		dp4 r2.w, F[3], r1
+		mov outpos, r2
+
+		; ---- material: vertex colour (bytes) x cw + mc ----
+		mul r7, cw, v1
+		add r7, mc, r7
+
+		; ---- GameCube lighting ----
+		ifu lit
+			dp3 r5.x, r4, r4
+			add r5.x, tiny, r5.x
+			rsq r5.x, r5.x
+			mul r4.xyz, r5.xxx, r4.xyz
+			mov r3, AMB
+			ifu l0
+				mov r2, -r1
+				add r2, LP[0], r2
+				dp3 r2.w, r2, r2
+				add r2.w, tiny, r2.w
+				rsq r6.x, r2.w
+				mul r2.xyz, r6.xxx, r2.xyz
+				dp3 r9.w, r2, r4
+				max r5.x, LF[0].xxxx, r9.wwww
+				mul r5.x, LF[0].yyyy, r5.x
+				add r5.x, LF[0].zzzz, r5.x
+				ifu a0
+					mov r8.x, ones
+					mul r8.y, r2.w, r6.x
+					mov r8.z, r2.w
+					dp3 r8.w, LK[0], r8
+					slt r9.w, deneps, r8.w
+					max r8.w, deneps, r8.w
+					rcp r8.w, r8.w
+					mul r8.w, r9.w, r8.w
+					mov r9.x, ones
+					dp3 r9.y, LD[0], r2
+					max r9.y, zeros, r9.y
+					mul r9.z, r9.y, r9.y
+					dp3 r10.x, LA[0], r9
+					max r10.x, zeros, r10.x
+					mul r10.x, r8.w, r10.x
+					mul r5.x, r10.x, r5.x
+				.end
+				ifu s0
+					sge r10.y, zeros, -r9.w
+					dp3 r9.y, LD[0], r4
+					max r9.y, zeros, r9.y
+					mul r9.y, r10.y, r9.y
+					mov r9.x, ones
+					mul r9.z, r9.y, r9.y
+					dp3 r10.x, LA[0], r9
+					max r10.x, zeros, r10.x
+					dp3 r8.w, LK[0], r9
+					slt r9.w, deneps, r8.w
+					max r8.w, deneps, r8.w
+					rcp r8.w, r8.w
+					mul r8.w, r9.w, r8.w
+					mul r10.x, r8.w, r10.x
+					mul r5.x, r10.x, r5.x
+				.end
+				mul r10, LC[0], r5.xxxx
+				add r3, r3, r10
+			.end
+			ifu l1
+				mov r2, -r1
+				add r2, LP[1], r2
+				dp3 r2.w, r2, r2
+				add r2.w, tiny, r2.w
+				rsq r6.x, r2.w
+				mul r2.xyz, r6.xxx, r2.xyz
+				dp3 r9.w, r2, r4
+				max r5.x, LF[1].xxxx, r9.wwww
+				mul r5.x, LF[1].yyyy, r5.x
+				add r5.x, LF[1].zzzz, r5.x
+				ifu a1
+					mov r8.x, ones
+					mul r8.y, r2.w, r6.x
+					mov r8.z, r2.w
+					dp3 r8.w, LK[1], r8
+					slt r9.w, deneps, r8.w
+					max r8.w, deneps, r8.w
+					rcp r8.w, r8.w
+					mul r8.w, r9.w, r8.w
+					mov r9.x, ones
+					dp3 r9.y, LD[1], r2
+					max r9.y, zeros, r9.y
+					mul r9.z, r9.y, r9.y
+					dp3 r10.x, LA[1], r9
+					max r10.x, zeros, r10.x
+					mul r10.x, r8.w, r10.x
+					mul r5.x, r10.x, r5.x
+				.end
+				ifu s1
+					sge r10.y, zeros, -r9.w
+					dp3 r9.y, LD[1], r4
+					max r9.y, zeros, r9.y
+					mul r9.y, r10.y, r9.y
+					mov r9.x, ones
+					mul r9.z, r9.y, r9.y
+					dp3 r10.x, LA[1], r9
+					max r10.x, zeros, r10.x
+					dp3 r8.w, LK[1], r9
+					slt r9.w, deneps, r8.w
+					max r8.w, deneps, r8.w
+					rcp r8.w, r8.w
+					mul r8.w, r9.w, r8.w
+					mul r10.x, r8.w, r10.x
+					mul r5.x, r10.x, r5.x
+				.end
+				mul r10, LC[1], r5.xxxx
+				add r3, r3, r10
+			.end
+			max r3, zeros, r3
+			min r3, ones, r3
+			mul r7, r3, r7
+		.end
+
+		; ---- nectar.ini lighting = 0: the old fake headlight ----
+		ifu head
+			dp3 r5.x, r4, r4
+			max r5.x, epsv, r5.x
+			rsq r5.y, r5.x
+			dp3 r5.z, ldir, r4
+			mul r5.z, r5.z, r5.y
+			max r5.w, r5.z, -r5.z
+			mul r5.x, highv, r5.w
+			add r5.x, lowv, r5.x
+			mul r7.xyz, r7, r5.xxx
+		.end
+		mov outclr, r7
+
+		; ---- texture coordinates: units 0 and 1, each built whole in a temporary ----
+		mov r13, zo
+		mov r13.xy, v2
+		mov r0, zo
+		mov r0.xy, v3
+		mov r11, zo
+		dp4 r5.x, tcu[0], r13
+		dp4 r5.y, tcu[1], r0
+		add r11.x, r5.x, r5.y
+		dp4 r5.x, tcu[2], r13
+		dp4 r5.y, tcu[3], r0
+		add r11.y, r5.x, r5.y
+		mov r12, zo
+		dp4 r5.x, tcu[4], r13
+		dp4 r5.y, tcu[5], r0
+		add r12.x, r5.x, r5.y
+		dp4 r5.x, tcu[6], r13
+		dp4 r5.y, tcu[7], r0
+		add r12.y, r5.x, r5.y
+		mov outtc0, r11
+		mov outtc1, r12
+		mov outtc2, zeros
+	.else
+		; ---- ring vertex (CPU-transformed) ----
+		mov outpos, v0
+		mov r1, v1
+		mul outclr, inv255, r1
+		mov outtc0, v2
+		mov outtc1, v3
+		mov outtc2, v4
+	.end
+	end
+.end

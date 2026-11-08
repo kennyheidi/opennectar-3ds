@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "captured": "2026-10-27",
+  "capture_note": "New 3DS (804 MHz, L2 on: the port requires a New 3DS, there is no Old 3DS profile), 2D, Forest of Hope with ~60 Pikmin, TEST build r48 log saved as n3ds_port/docs/validation/perf-2026-10-27-r48-forest-busy.log. Stage figures: [lite2]/[lite3]/[prof]/[prof2] lines. Regenerate from a newer perf-*.log; the gate rejects a captured date newer than the newest log on disk.",
+  "seed": [
+    {
+      "file": "n3ds_port/platform/n3ds_gfx.cpp",
+      "symbols": [
+        "makeGeom",
+        "finishGeom",
+        "makeAttr",
+        "gxLightVertex",
+        "triReject",
+        "emitTri",
+        "resolveLazy",
+        "xfOne",
+        "xfFour",
+        "xfFourG",
+        "xfGather",
+        "xfRange",
+        "cpuDrawBody",
+        "ctGet",
+        "doDisplayList",
+        "meshTryDraw",
+        "meshClassify",
+        "meshUniforms",
+        "clamp255"
+      ],
+      "why": "worker display lists 25-37 ms/frame: ~10k triangles, ~8k vertex transforms per busy frame (r48 [lite3]/[lite4]); every listed symbol runs per vertex, per triangle or per draw (>=256/frame)"
+    },
+    {
+      "file": "n3ds_port/platform/n3ds_tev.cpp",
+      "symbols": [
+        "n3dsTevBuild"
+      ],
+      "why": "material resolve 265-417 calls/frame ([lite2]) -> >= 256/frame"
+    },
+    {
+      "file": "n3ds_port/platform/n3ds_gpu.cpp",
+      "symbols": [
+        "applyState",
+        "meshIssue",
+        "n3ds_gpu_commit",
+        "setU"
+      ],
+      "why": "95-219 GPU draws/frame + uniform uploads per draw; per-frame GPU submit"
+    },
+    {
+      "file": "n3ds_port/platform/n3ds_fastmix.inc",
+      "symbols": [
+        "*"
+      ],
+      "why": "mixer: per output sample per voice, 16-36 ms per 93 ms chunk on core 1 ([prof2])"
+    }
+  ],
+  "cold_always": [
+    "n3ds_port/platform/n3ds_texconv.cpp",
+    "n3ds_port/platform/n3ds_pak.cpp",
+    "n3ds_port/platform/n3ds_config.cpp",
+    "n3ds_port/platform/n3ds_dbgmenu.cpp",
+    "n3ds_port/platform/n3ds_bench.cpp",
+    "n3ds_port/platform/n3ds_trace.cpp",
+    "n3ds_port/platform/n3ds_alloc_trace.cpp",
+    "n3ds_port/platform/n3ds_main.cpp",
+    "n3ds_port/platform/n3ds_stx.cpp",
+    "n3ds_port/platform/n3ds_stx_glue.inc",
+    "n3ds_port/platform/n3ds_sfx_diag.inc",
+    "n3ds_port/platform/n3ds_aa_resample.inc"
+  ],
+  "cold_note": "n3ds_aa_resample.inc: the low-pass runs once per wave when it is first decoded into the decoded-wave cache (r48 [sfx]: 100 waves cached, 3300 KB), like texture generation; per-play cost shows as [audioprof] note-start ms each."
+}

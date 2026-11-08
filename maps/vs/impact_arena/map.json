@@ -1,0 +1,77 @@
+{
+  "format": 1,
+  "mode": "vs",
+  "meta": { "name": "Impact Arena", "author": "Open Nectar", "version": "1.0" },
+  "bounds": { "minX": -1600, "maxX": 1600, "minZ": -900, "maxZ": 900, "wallHeight": 150 },
+  "symmetry": "rotate180",
+  "environment": {
+    "baseStage": "stages/chal0.ini",
+    "sun": { "dir": [0.32, -0.92, 0.23] }
+  },
+  "terrain": { "type": "flat", "source": "courses/practice/practice.mod", "cell": 50 },
+  "walls": [
+    { "a": [-1150, -900], "b": [-1150, -560], "thickness": 40, "height": 150 },
+    { "a": [-1150, -330], "b": [-1150, -110], "thickness": 40, "height": 150 },
+    { "a": [-1150, 110], "b": [-1150, 330], "thickness": 40, "height": 150 },
+    { "a": [-1150, 560], "b": [-1150, 900], "thickness": 40, "height": 150 },
+    { "a": [-725, -230], "b": [-575, -230], "thickness": 110, "height": 150 },
+    { "a": [-725, 230], "b": [-575, 230], "thickness": 110, "height": 150 },
+    { "a": [-325, -470], "b": [-175, -470], "thickness": 110, "height": 150 },
+    { "arc": { "center": [0, 0], "radius": 260, "from": 20, "to": 70, "segments": 3 }, "thickness": 30, "height": 100 },
+    { "arc": { "center": [0, 0], "radius": 260, "from": 110, "to": 160, "segments": 3 }, "thickness": 30, "height": 100 }
+  ],
+  "ponds": [
+    { "center": [0, -640], "radius": [280, 170], "island": 75, "depth": 20, "surface": -4 }
+  ],
+  "routes": {
+    "auto": true,
+    "step": 150,
+    "margin": 100,
+    "barrierX": [-1150, 1150],
+    "passes": [[-1150, 0], [1150, 0], [-1150, -445], [-1150, 445], [1150, -445], [1150, 445]]
+  },
+  "vs": {
+    "bases": [
+      { "player": 0, "pos": [-1260, 0], "face": 90 },
+      { "player": 1, "pos": [1260, 0], "face": -90 }
+    ],
+    "onions": [
+      { "player": 0, "color": "blue", "pos": [-1480, 700] },
+      { "player": 0, "color": "red", "pos": [-1320, 420] },
+      { "player": 0, "color": "yellow", "pos": [-1320, -420] },
+      { "player": 1, "color": "blue", "pos": [1480, -700] },
+      { "player": 1, "color": "red", "pos": [1320, -420] },
+      { "player": 1, "color": "yellow", "pos": [1320, 420] }
+    ],
+    "rockets": [
+      { "player": 0, "pos": [-1480, 0], "face": 90 },
+      { "player": 1, "pos": [1480, 0], "face": -90 }
+    ],
+    "gates": [
+      { "player": 0, "pos": [-1150, 0], "face": 90 },
+      { "player": 1, "pos": [1150, 0], "face": 90 }
+    ],
+    "bombPiles": [
+      { "player": 0, "pos": [-1480, -650] },
+      { "player": 1, "pos": [1480, 650] }
+    ],
+    "pellets": [
+      { "id": "pr01", "pos": [-1300, -700] },
+      { "id": "pb01", "pos": [-1300, 650] },
+      { "id": "pr05", "pos": [-500, 600] },
+      { "id": "pb05", "pos": [180, -640] },
+      { "id": "py05", "pos": [0, -330] }
+    ],
+    "pieces": [
+      { "kind": "small_a", "pos": [-1000, -720] },
+      { "kind": "small_b", "pos": [-760, 380] },
+      { "kind": "small_c", "pos": [-880, 0] },
+      { "kind": "guarded", "pos": [-440, -360] },
+      { "kind": "pond", "pos": [0, -640] }
+    ],
+    "bigPiece": { "pos": [0, 0] },
+    "guards": [
+      { "enemy": "chappy", "pos": [-330, -440] }
+    ]
+  }
+}

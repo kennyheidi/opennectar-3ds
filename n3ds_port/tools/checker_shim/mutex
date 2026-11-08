@@ -1,0 +1,5 @@
+// CHECKER ONLY (never on a real build's include path): bare arm-none-eabi newlib has no gthreads,
+// devkitARM does. Lets check_arm.sh syntax-check code that uses std::mutex.
+#pragma once
+namespace std { class mutex { public: void lock(){} void unlock(){} bool try_lock(){return true;} };
+  template<class M> class lock_guard { public: explicit lock_guard(M&){} }; }
